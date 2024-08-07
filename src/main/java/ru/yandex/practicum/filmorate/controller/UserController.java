@@ -17,6 +17,7 @@ import java.util.Map;
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
     private int idCounter = 1;
+
     @PostMapping
     public User createUser(@RequestBody User user) {
         log.info("Пришёл запрос на создание пользователя с логином " + user.getLogin());
@@ -25,10 +26,12 @@ public class UserController {
         users.put(user.getId(), user);
         return user;
     }
+
     @GetMapping
     public List<User> getUsersList() {
         return new ArrayList<>(users.values());
     }
+
     @PutMapping
     public User updateUser(@RequestBody User user) {
         log.info("Пришёл запрос на обновление данных пользователя с логином " + user.getLogin());

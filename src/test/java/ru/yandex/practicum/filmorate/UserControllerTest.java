@@ -1,9 +1,12 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -11,12 +14,19 @@ import java.time.Month;
 
 public class UserControllerTest {
     private final UserController userController = new UserController();
+    private static Validator validator;
+
+    @BeforeAll
+    public static void setUp() {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+    }
 
     @Test
     public void emptyUserTest() {
         User user = new User();
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertFalse(validator.validate(user).isEmpty());
     }
 
     @Test
@@ -26,8 +36,8 @@ public class UserControllerTest {
         user.setLogin("ElPrimo");
         user.setName("");
         user.setBirthday(LocalDate.of(2003, Month.NOVEMBER, 24));
-        userController.createUser(user);
-        Assertions.assertEquals(user.getName(), user.getLogin());
+        User user1 = userController.createUser(user);
+        Assertions.assertEquals(user1.getName(), user1.getLogin());
     }
 
     @Test
@@ -37,7 +47,8 @@ public class UserControllerTest {
         user.setLogin("");
         user.setName("Misha");
         user.setBirthday(LocalDate.of(2003, Month.NOVEMBER, 24));
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertFalse(validator.validate(user).isEmpty());
+
 
         User user1 = new User();
 
@@ -45,7 +56,8 @@ public class UserControllerTest {
         user.setLogin("El Primo");
         user.setName("Misha");
         user.setBirthday(LocalDate.of(2003, Month.NOVEMBER, 24));
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user1));
+        Assertions.assertFalse(validator.validate(user1).isEmpty());
+
     }
 
     @Test
@@ -55,14 +67,16 @@ public class UserControllerTest {
         user.setLogin("ElPrimo");
         user.setName("Misha");
         user.setBirthday(LocalDate.of(2003, Month.NOVEMBER, 24));
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertFalse(validator.validate(user).isEmpty());
+
 
         User user1 = new User();
         user.setEmail("ElPrimo35gmail.com");
         user.setLogin("ElPrimo");
         user.setName("Misha");
         user.setBirthday(LocalDate.of(2003, Month.NOVEMBER, 24));
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user1));
+        Assertions.assertFalse(validator.validate(user1).isEmpty());
+
     }
 
     @Test
@@ -72,6 +86,6 @@ public class UserControllerTest {
         user.setLogin("ElPrimo");
         user.setName("Misha");
         user.setBirthday(LocalDate.of(3000, Month.NOVEMBER, 24));
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertFalse(validator.validate(user).isEmpty());
     }
 }

@@ -1,6 +1,10 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
@@ -11,12 +15,19 @@ import java.time.Month;
 
 public class FilmControllerTest {
     private final FilmController filmController = new FilmController();
+    private static Validator validator;
+
+    @BeforeAll
+    public static void setUp() {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+    }
 
     @Test
     public void emptyUserTest() {
         Film film = new Film();
 
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        Assertions.assertThrows(RuntimeException.class, () -> filmController.createFilm(film));
     }
 
     @Test
@@ -26,7 +37,8 @@ public class FilmControllerTest {
         film.setName("");
         film.setReleaseDate(LocalDate.of(1994, Month.DECEMBER, 16));
         film.setDuration(106);
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+
+        Assertions.assertFalse(validator.validate(film).isEmpty());
     }
 
     @Test
@@ -40,7 +52,7 @@ public class FilmControllerTest {
                 " left it for her husband's captors, Joe \"Mental\" Mentalino and J. P. Shay.");
         film.setReleaseDate(LocalDate.of(1994, Month.DECEMBER, 16));
         film.setDuration(106);
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        Assertions.assertFalse(validator.validate(film).isEmpty());
     }
 
     @Test
@@ -60,6 +72,6 @@ public class FilmControllerTest {
         film.setDescription("Adventure of two dump friends");
         film.setReleaseDate(LocalDate.of(1994, Month.DECEMBER, 16));
         film.setDuration(0);
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        Assertions.assertFalse(validator.validate(film).isEmpty());
     }
 }

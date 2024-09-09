@@ -35,7 +35,6 @@ public class FilmControllerTest {
     @Test
     public void emptyUserTest() {
         Film film = new Film();
-
         Assertions.assertThrows(RuntimeException.class, () -> filmController.createFilm(film));
     }
 

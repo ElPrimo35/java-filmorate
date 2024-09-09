@@ -1,52 +1,56 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@AllArgsConstructor
 public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int idCounter = 1;
+    private final UserService userService;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        log.info("Пришёл запрос на создание пользователя с логином " + user.getLogin());
-        validate(user);
-        user.setId(idCounter++);
-        users.put(user.getId(), user);
-        return user;
+        return userService.createUser(user);
     }
 
     @GetMapping
     public List<User> getUsersList() {
-        return new ArrayList<>(users.values());
+        return userService.getUsersList();
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriendsList(@PathVariable int id) {
+        return userService.getFriendsList(id);
+    }
+
+    @GetMapping("{id}/friends/common/{otherId}")
+    public List<User> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
+        return userService.getMutualFriends(id, otherId);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        log.info("Пришёл запрос на обновление данных пользователя с логином " + user.getLogin());
-        validate(user);
-        if (users.containsKey(user.getId())) {
-            User newUser = users.get(user.getId());
-            newUser.setEmail(user.getEmail());
-            newUser.setLogin(user.getLogin());
-            newUser.setName(user.getName());
-            newUser.setBirthday(user.getBirthday());
-            users.put(newUser.getId(), newUser);
-            return newUser;
-        } else {
-            throw new ValidationException("Произошла ошибка");
-        }
+        return userService.updateUser(user);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<User> addFriend(@PathVariable int id, @PathVariable int friendId) {
+        return ResponseEntity.ok(userService.addFriend(id, friendId));
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<User> removeFriend(@PathVariable int id, @PathVariable int friendId) {
+        return ResponseEntity.ok(userService.removeFriend(id, friendId));
     }
 
     private void validate(User user) {

@@ -21,11 +21,7 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<Film> createFilm(@Valid @RequestBody Film film) {
-        try {
-            return filmService.createFilm(film);
-        } catch (ValidationException e) {
-            return new ResponseEntity<>(film, HttpStatus.valueOf(400));
-        }
+        return ResponseEntity.ok(filmService.createFilm(film));
     }
 
     @GetMapping

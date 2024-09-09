@@ -31,11 +31,11 @@ public class FilmService implements FilmServiceInt {
     };
 
     @Override
-    public ResponseEntity<Film> createFilm(Film film) {
+    public Film createFilm(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, Month.DECEMBER, 28))) {
             throw new ValidationException("Дата релиза фильма не может быть настолько ранней");
         }
-        return new ResponseEntity<>(filmStorage.createFilm(film), HttpStatusCode.valueOf(200));
+        return filmStorage.createFilm(film);
     }
 
     @Override

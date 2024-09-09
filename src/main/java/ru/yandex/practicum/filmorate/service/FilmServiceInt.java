@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.List;
 
 public interface FilmServiceInt {
-    ResponseEntity<Film> createFilm(Film film);
+    Film createFilm(Film film);
 
     List<Film> getFilmsList();
 

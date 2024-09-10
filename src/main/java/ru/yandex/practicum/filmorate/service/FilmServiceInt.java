@@ -12,9 +12,9 @@ public interface FilmServiceInt {
 
     ResponseEntity<Film> updateFilm(Film film);
 
-    ResponseEntity<String> likeFilm(int id, int userId);
+    void likeFilm(int id, int userId);
 
-    ResponseEntity<String> removeLike(int id, int userId);
+    void removeLike(int id, int userId);
 
     List<Film> getPopularFilms(Integer count);
 }

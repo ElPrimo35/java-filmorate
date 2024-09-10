@@ -39,36 +39,31 @@ public class FilmService implements FilmServiceInt {
     }
 
     @Override
-    public ResponseEntity<String> likeFilm(int id, int userId) {
+    public void likeFilm(int id, int userId) {
         filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id: " + id + " не найден"));
         userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
         Film film = filmStorage.getFilmsList().get(id - 1);
         int likes = film.getLikesCount();
         film.setLikesCount(++likes);
         film.getUsersLikedId().add(userId);
-        return new ResponseEntity<>("Успешно", HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<String> removeLike(int id, int userId) {
+    public void removeLike(int id, int userId) {
         filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id: " + id + " не найден"));
         userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
         Film film = filmStorage.getFilmsList().get(id - 1);
         int likes = film.getLikesCount();
         film.setLikesCount(--likes);
         film.getUsersLikedId().remove(userId - 1);
-        return new ResponseEntity<>("Успешно", HttpStatus.OK);
     }
 
     @Override
     public List<Film> getPopularFilms(Integer count) {
         List<Film> films = filmStorage.getFilmsList();
         films.sort(comparator);
-        if (count == null) {
-            return films.subList(0, 10);
-        }
-        if (count > filmStorage.getFilmsList().size()) {
-            throw new ValidationException("Параметр count слишком большой");
+        if (count == null || count > films.size()) {
+            count = Math.min(films.size(), 10);
         }
         return films.subList(0, count);
     }

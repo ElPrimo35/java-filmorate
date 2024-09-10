@@ -38,13 +38,13 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<String> likeFilm(@PathVariable int id, @PathVariable int userId) {
-        return filmService.likeFilm(id, userId);
+    public void likeFilm(@PathVariable int id, @PathVariable int userId) {
+        filmService.likeFilm(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<String> removeLike(@PathVariable int id, @PathVariable int userId) {
-        return filmService.removeLike(id, userId);
+    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+        filmService.removeLike(id, userId);
     }
 }
 

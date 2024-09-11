@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
@@ -9,10 +9,12 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService implements UserServiceInt {
     private final UserStorage userStorage;
 
@@ -30,40 +32,49 @@ public class UserService implements UserServiceInt {
 
     @Override
     public List<User> getFriendsList(int id) {
-        userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь с id: " + id + " не найден"));
-        User user = userStorage.getUsersList().get(id - 1);
-        return user.getFriends().stream().map(friendId -> userStorage.getUsersList().get(friendId - 1)).toList();
+        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        return user.getFriends().stream().map(friendId -> userStorage.getUserById(friendId).get()).toList();
     }
 
     @Override
     public List<User> getMutualFriends(int id, int otherId) {
-        User user = userStorage.getUsersList().get(id - 1);
-        User user1 = userStorage.getUsersList().get(otherId - 1);
-        return user1.getFriends().stream().filter(friendId -> user.getFriends().stream().anyMatch(friend1Id -> friendId == friend1Id)).map(mutualFriendId -> userStorage.getUsersList().get(mutualFriendId - 1)).toList();
+        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        User user1 = userStorage.getUserById(otherId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        final Set<Integer> friends = user.getFriends();
+        final Set<Integer> otherFriends = user1.getFriends();
+        return friends.stream()
+                .filter(otherFriends::contains)
+                .map(userId -> userStorage.getUserById(userId).get())
+                .collect(Collectors.toList());
+        //return user1.getFriends().stream().filter(friendId -> user.getFriends().stream().anyMatch(friend1Id -> friendId == friend1Id)).map(mutualFriendId -> userStorage.getUsersList().get(mutualFriendId - 1)).toList();
     }
 
     @Override
     public User updateUser(User user) {
         log.info("Пришёл запрос на обновление данных пользователя с логином " + user.getLogin());
-        userStorage.getUserById(user.getId()).orElseThrow(() -> new NotFoundException("Пользователь с id: " + user.getId() + " не найден"));
-        validate(user);
-        return userStorage.updateUser(user);
+        User newUser = userStorage.getUserById(user.getId()).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        newUser.setEmail(user.getEmail());
+        newUser.setLogin(user.getLogin());
+        newUser.setName(user.getName());
+        newUser.setBirthday(user.getBirthday());
+        validate(newUser);
+        return userStorage.updateUser(newUser);
     }
 
     @Override
     public User addFriend(int id, int friendId) {
-        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь с id: " + id + " не найден"));
+        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Объект не найден"));
         user.getFriends().add(friendId);
-        User user1 = userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Пользователь с id: " + friendId + " не найден"));
+        User user1 = userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Объект не найден"));
         user1.getFriends().add(id);
         return user1;
     }
 
     @Override
     public User removeFriend(int id, int friendId) {
-        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь с id: " + id + " не найден"));
+        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Объект не найден"));
         user.getFriends().remove(friendId);
-        User user1 = userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Пользователь с id: " + friendId + " не найден"));
+        User user1 = userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Объект не найден"));
         user1.getFriends().remove(id);
         return user1;
     }

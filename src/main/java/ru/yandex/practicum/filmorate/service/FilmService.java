@@ -1,10 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
@@ -18,17 +15,13 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class FilmService implements FilmServiceInt {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final Comparator<Film> comparator = new Comparator<Film>() {
-        @Override
-        public int compare(Film o1, Film o2) {
-            return Integer.compare(o2.getLikesCount(), o1.getLikesCount());
-        }
-    };
+
+    private final Comparator<Film> comparator = (o1, o2) -> Integer.compare(o2.getLikesCount(), o1.getLikesCount());
 
     @Override
     public Film createFilm(Film film) {
@@ -40,32 +33,26 @@ public class FilmService implements FilmServiceInt {
 
     @Override
     public void likeFilm(int id, int userId) {
-        filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id: " + id + " не найден"));
-        userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
-        Film film = filmStorage.getFilmsList().get(id - 1);
-        int likes = film.getLikesCount();
-        film.setLikesCount(++likes);
+        Film film = filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Объект не найден"));
+        userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Объект не найден"));
+        film.setLikesCount(addLike(film.getLikesCount()));
         film.getUsersLikedId().add(userId);
     }
 
     @Override
     public void removeLike(int id, int userId) {
-        filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id: " + id + " не найден"));
-        userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
-        Film film = filmStorage.getFilmsList().get(id - 1);
-        int likes = film.getLikesCount();
-        film.setLikesCount(--likes);
-        film.getUsersLikedId().remove(userId - 1);
+        Film film = filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Объект не найден"));
+        userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Объект не найден"));
+        film.setLikesCount(removeLike(film.getLikesCount()));
+        film.getUsersLikedId().remove(userId);
     }
 
     @Override
     public List<Film> getPopularFilms(Integer count) {
-        List<Film> films = filmStorage.getFilmsList();
-        films.sort(comparator);
-        if (count == null || count > films.size()) {
-            count = Math.min(films.size(), 10);
-        }
-        return films.subList(0, count);
+        return filmStorage.getFilmsList().stream()
+                .sorted(comparator)
+                .limit(count)
+                .toList();
     }
 
 
@@ -75,12 +62,21 @@ public class FilmService implements FilmServiceInt {
     }
 
     @Override
-    public ResponseEntity<Film> updateFilm(Film film) {
-        try {
-            filmStorage.updateFilm(film);
-            return new ResponseEntity<>(film, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(film, HttpStatusCode.valueOf(404));
-        }
+    public Film updateFilm(Film film) {
+        Film newFilm = filmStorage.getFilmById(film.getId()).orElseThrow(() -> new NotFoundException("Такого фильма нет"));
+        newFilm.setName(film.getName());
+        newFilm.setDescription(film.getDescription());
+        newFilm.setReleaseDate(film.getReleaseDate());
+        newFilm.setDuration(film.getDuration());
+        filmStorage.updateFilm(film);
+        return film;
+    }
+
+    private int addLike(int likesCount) {
+        return ++likesCount;
+    }
+
+    private int removeLike(int likesCount) {
+        return --likesCount;
     }
 }

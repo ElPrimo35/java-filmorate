@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -10,7 +9,7 @@ public interface FilmServiceInt {
 
     List<Film> getFilmsList();
 
-    ResponseEntity<Film> updateFilm(Film film);
+    Film updateFilm(Film film);
 
     void likeFilm(int id, int userId);
 

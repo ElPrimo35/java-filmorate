@@ -33,7 +33,7 @@ public class UserService implements UserServiceInt {
     @Override
     public List<User> getFriendsList(int id) {
         User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        return user.getFriends().stream().map(friendId -> userStorage.getUserById(friendId).get()).toList();
+        return user.getFriends().stream().map(friendId -> userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Пользователь не найден"))).toList();
     }
 
     @Override
@@ -44,9 +44,8 @@ public class UserService implements UserServiceInt {
         final Set<Integer> otherFriends = user1.getFriends();
         return friends.stream()
                 .filter(otherFriends::contains)
-                .map(userId -> userStorage.getUserById(userId).get())
+                .map(userId -> userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден")))
                 .collect(Collectors.toList());
-        //return user1.getFriends().stream().filter(friendId -> user.getFriends().stream().anyMatch(friend1Id -> friendId == friend1Id)).map(mutualFriendId -> userStorage.getUsersList().get(mutualFriendId - 1)).toList();
     }
 
     @Override

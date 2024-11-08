@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
@@ -17,7 +16,6 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -81,6 +79,7 @@ public class FilmService implements FilmServiceInt {
         }
         return filmStorage.createFilm(film);
     }
+
     @Override
     public Optional<Film> getFilmById(Integer id) {
         return filmStorage.getFilmById(id);

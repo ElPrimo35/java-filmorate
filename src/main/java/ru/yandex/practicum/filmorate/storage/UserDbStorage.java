@@ -32,7 +32,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     private RowMapper<User> mapUser(Integer userId) {
-        return  (rs, rowNum) -> {
+        return (rs, rowNum) -> {
             User user = new User();
             user.setId(rs.getInt("id"));
             user.setEmail(rs.getString("email"));

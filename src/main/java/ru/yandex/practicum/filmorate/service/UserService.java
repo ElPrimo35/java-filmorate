@@ -32,6 +32,7 @@ public class UserService implements UserServiceInt {
     public List<User> getUsersList() {
         return userStorage.getUsersList();
     }
+
     public Optional<User> getUserById(Integer id) {
         return userStorage.getUserById(id);
     }

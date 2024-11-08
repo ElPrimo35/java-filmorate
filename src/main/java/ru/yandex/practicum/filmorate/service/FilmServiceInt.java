@@ -5,17 +5,20 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface FilmServiceInt {
 
     List<Genre> getGenres();
+
     Genre getGenreById(Integer id);
 
     List<Mpa> getAllMpa();
+
     Mpa getMpa(Integer id);
+
     Film createFilm(Film film);
+
     Optional<Film> getFilmById(Integer id);
 
     List<Film> getFilmsList();

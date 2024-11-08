@@ -2,10 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -13,6 +17,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,8 +26,53 @@ import java.util.List;
 public class FilmService implements FilmServiceInt {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     private final Comparator<Film> comparator = (o1, o2) -> Integer.compare(o2.getLikesCount(), o1.getLikesCount());
+
+    @Override
+    public List<Genre> getGenres() {
+        String sql = "SELECT * FROM filmGenres;";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Genre genre = new Genre();
+            genre.setId(rs.getInt("id"));
+            genre.setName(rs.getString("name"));
+            return genre;
+        });
+    }
+
+    @Override
+    public Genre getGenreById(Integer id) {
+        String sql = "SELECT * FROM filmGenres WHERE \"id\" = ?";
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+            Genre genre = new Genre();
+            genre.setId(rs.getInt("id"));
+            genre.setName(rs.getString("name"));
+            return genre;
+        }, id);
+    }
+
+    @Override
+    public List<Mpa> getAllMpa() {
+        String sql = "SELECT * FROM MPA;";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Mpa mpa = new Mpa();
+            mpa.setId(rs.getInt("id"));
+            mpa.setMpa(rs.getString("MPA"));
+            return mpa;
+        });
+    }
+
+    @Override
+    public Mpa getMpa(Integer id) {
+        String sql = "SELECT * FROM MPA WHERE \"id\" = ?";
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+            Mpa mpa = new Mpa();
+            mpa.setId(rs.getInt("id"));
+            mpa.setMpa(rs.getString("MPA"));
+            return mpa;
+        }, id);
+    }
 
     @Override
     public Film createFilm(Film film) {
@@ -30,6 +81,10 @@ public class FilmService implements FilmServiceInt {
         }
         return filmStorage.createFilm(film);
     }
+    @Override
+    public Optional<Film> getFilmById(Integer id) {
+        return filmStorage.getFilmById(id);
+    }
 
     @Override
     public void likeFilm(int id, int userId) {
@@ -37,6 +92,10 @@ public class FilmService implements FilmServiceInt {
         userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Объект не найден"));
         film.setLikesCount(addLike(film.getLikesCount()));
         film.getUsersLikedId().add(userId);
+        String sqlLike = "INSERT INTO USERSFILMS (\"userId\", \"filmId\")\n" +
+                "VALUES (?, ?);";
+        jdbcTemplate.update(sqlLike, userId, id);
+        filmStorage.updateFilm(film);
     }
 
     @Override
@@ -45,6 +104,9 @@ public class FilmService implements FilmServiceInt {
         userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Объект не найден"));
         film.setLikesCount(removeLike(film.getLikesCount()));
         film.getUsersLikedId().remove(userId);
+        String sqlLike = "DELETE FROM USERSFILMS \n" +
+                "WHERE \"userId\" = ? AND \"filmId\" = ?;";
+        jdbcTemplate.update(sqlLike, userId, id);
     }
 
     @Override
@@ -63,11 +125,7 @@ public class FilmService implements FilmServiceInt {
 
     @Override
     public Film updateFilm(Film film) {
-        Film newFilm = filmStorage.getFilmById(film.getId()).orElseThrow(() -> new NotFoundException("Такого фильма нет"));
-        newFilm.setName(film.getName());
-        newFilm.setDescription(film.getDescription());
-        newFilm.setReleaseDate(film.getReleaseDate());
-        newFilm.setDuration(film.getDuration());
+        filmStorage.getFilmById(film.getId()).orElseThrow(() -> new NotFoundException("Такого фильма нет"));
         filmStorage.updateFilm(film);
         return film;
     }

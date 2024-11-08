@@ -11,11 +11,11 @@ public interface UserServiceInt {
 
     User updateUser(User user);
 
-    List<User> getFriendsList(int id);
+    List<User> getFriendsList(Integer id);
 
-    List<User> getMutualFriends(int id, int otherId);
+    List<User> getMutualFriends(Integer id, Integer otherId);
 
-    User addFriend(int id, int friendId);
+    User addFriend(Integer id, Integer friendId);
 
-    User removeFriend(int id, int friendId);
+    User removeFriend(Integer id, Integer friendId);
 }

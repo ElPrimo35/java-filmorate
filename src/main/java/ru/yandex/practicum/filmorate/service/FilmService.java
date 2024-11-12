@@ -41,7 +41,10 @@ public class FilmService implements FilmServiceInt {
 
     @Override
     public Genre getGenreById(Integer id) {
-        String sql = "SELECT * FROM filmGenres WHERE \"id\" = ?";
+        if (id > 6) {
+            throw new NotFoundException("Такого жанра нет");
+        }
+        String sql = "SELECT * FROM filmGenres WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
             Genre genre = new Genre();
             genre.setId(rs.getInt("id"));
@@ -56,18 +59,21 @@ public class FilmService implements FilmServiceInt {
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Mpa mpa = new Mpa();
             mpa.setId(rs.getInt("id"));
-            mpa.setMpa(rs.getString("MPA"));
+            mpa.setName(rs.getString("name"));
             return mpa;
         });
     }
 
     @Override
     public Mpa getMpa(Integer id) {
-        String sql = "SELECT * FROM MPA WHERE \"id\" = ?";
+        if (id > 5) {
+            throw new NotFoundException("MPA не найден");
+        }
+        String sql = "SELECT * FROM MPA WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
             Mpa mpa = new Mpa();
             mpa.setId(rs.getInt("id"));
-            mpa.setMpa(rs.getString("MPA"));
+            mpa.setName(rs.getString("name"));
             return mpa;
         }, id);
     }
@@ -76,6 +82,17 @@ public class FilmService implements FilmServiceInt {
     public Film createFilm(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, Month.DECEMBER, 28))) {
             throw new ValidationException("Дата релиза фильма не может быть настолько ранней");
+        }
+        if (film.getMpa().getId() > 5) {
+            throw new ValidationException("Такого рейтинга нет");
+        }
+        if (film.getGenres() == null) {
+            return filmStorage.createFilm(film);
+        }
+        for (Genre genre : film.getGenres()) {
+            if (genre.getId() > 6) {
+                throw new ValidationException("Такого жанра нет");
+            }
         }
         return filmStorage.createFilm(film);
     }
@@ -91,7 +108,7 @@ public class FilmService implements FilmServiceInt {
         userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Объект не найден"));
         film.setLikesCount(addLike(film.getLikesCount()));
         film.getUsersLikedId().add(userId);
-        String sqlLike = "INSERT INTO USERSFILMS (\"userId\", \"filmId\")\n" +
+        String sqlLike = "INSERT INTO USERSFILMS (userId, filmId)\n" +
                 "VALUES (?, ?);";
         jdbcTemplate.update(sqlLike, userId, id);
         filmStorage.updateFilm(film);
@@ -104,7 +121,7 @@ public class FilmService implements FilmServiceInt {
         film.setLikesCount(removeLike(film.getLikesCount()));
         film.getUsersLikedId().remove(userId);
         String sqlLike = "DELETE FROM USERSFILMS \n" +
-                "WHERE \"userId\" = ? AND \"filmId\" = ?;";
+                "WHERE userId = ? AND filmId = ?;";
         jdbcTemplate.update(sqlLike, userId, id);
     }
 
@@ -124,7 +141,7 @@ public class FilmService implements FilmServiceInt {
 
     @Override
     public Film updateFilm(Film film) {
-        filmStorage.getFilmById(film.getId()).orElseThrow(() -> new NotFoundException("Такого фильма нет"));
+//        filmStorage.getFilmById(film.getId()).orElseThrow(() -> new NotFoundException("Такого фильма нет"));
         filmStorage.updateFilm(film);
         return film;
     }

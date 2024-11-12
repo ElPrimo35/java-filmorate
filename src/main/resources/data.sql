@@ -1,32 +1,52 @@
-INSERT INTO FRIENDSTATUS ("id", "status")
+INSERT INTO FRIENDSTATUS (id, status)
 VALUES (1, 'confirmed');
 
-INSERT INTO FRIENDSTATUS ("id", "status")
+INSERT INTO FRIENDSTATUS (id, status)
 VALUES (2, 'unconfirmed');
 
-INSERT INTO MPA ("id", "MPA")
-VALUES (1, 'ExampleMPA');
+INSERT INTO MPA (name)
+VALUES ('G');
 
-INSERT INTO FILMGENRES ("id", "name")
-VALUES (1, 'ExampleGenre');
+INSERT INTO MPA (name)
+VALUES ('PG');
 
-INSERT INTO FILMS ("id", "name", "description", "releaseDate", "duration", "genre", "MPA")
-VALUES (2, 'Dumb and dumber 2', 'Two dumb friends together again', '2014-11-14', 104, 1, 1);
+INSERT INTO MPA (name)
+VALUES ('PG-13');
 
-INSERT INTO FILMS ("id", "name", "description", "releaseDate", "duration", "genre", "MPA")
-VALUES (1, 'Dumb and dumber', 'Two dumb friends', '1994-12-16', 106, 1, 1);
+INSERT INTO MPA (name)
+VALUES ('R');
 
-INSERT INTO USERS ("id", "email", "login", "name", "birthday")
-VALUES (1, 'email@1', 'login', 'name', '2000-12-12');
+INSERT INTO MPA (name)
+VALUES ('NC-17');
 
-INSERT INTO USERS ("id", "email", "login", "name", "birthday")
-VALUES (2, 'email@2', 'login', 'name', '2000-12-12');
+INSERT INTO FILMGENRES(name)
+VALUES ('Комедия');
 
-INSERT INTO USERSFILMS ("userId", "filmId")
-VALUES (1, 2);
+INSERT INTO FILMGENRES(name)
+VALUES ('Драма');
 
-INSERT INTO USERSFILMS ("userId", "filmId")
-VALUES (1, 1);
+INSERT INTO FILMGENRES(name)
+VALUES ('Мультфильм');
 
-INSERT INTO USERFRIENDS ("userId", "friendId", "status")
-VALUES (1, 2, 1);
+INSERT INTO FILMGENRES(name)
+VALUES ('Триллер');
+
+INSERT INTO FILMGENRES(name)
+VALUES ('Документальный');
+
+INSERT INTO FILMGENRES(name)
+VALUES ('Боевик');
+
+--INSERT INTO USERS (email, login, name, birthday)
+--VALUES ('q@q', 'qqq', 'gg', '2000-12-12');
+--
+--INSERT INTO USERS (email, login, name, birthday)
+--VALUES ('q@q', 'qqq', 'gg', '2000-12-12');
+--
+--INSERT INTO FILMS (name, description, releaseDate, duration, MPA)
+--VALUES ('qq', 'qqqq', '2000-12-12', 111, 1);
+
+
+
+
+

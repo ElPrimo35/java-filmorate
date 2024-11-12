@@ -25,25 +25,8 @@ public class FilmController {
         return ResponseEntity.ok(filmService.createFilm(film));
     }
 
-    @GetMapping("/genres")
-    public List<Genre> getGenres() {
-        return filmService.getGenres();
-    }
 
-    @GetMapping("/genres/{id}")
-    public Genre getGenreById(@Valid @PathVariable Integer id) {
-        return filmService.getGenreById(id);
-    }
 
-    @GetMapping("/mpa")
-    public List<Mpa> getAllMpa() {
-        return filmService.getAllMpa();
-    }
-
-    @GetMapping("/mpa/{id}")
-    public Mpa getMpa(@PathVariable Integer id) {
-        return filmService.getMpa(id);
-    }
 
 
     @GetMapping("/{id}")

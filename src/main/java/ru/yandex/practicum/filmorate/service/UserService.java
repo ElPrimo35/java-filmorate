@@ -69,10 +69,9 @@ public class UserService implements UserServiceInt {
         user.getFriends().add(friendId);
         User user1 = userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Объект не найден"));
         user1.getFriends().add(id);
-        String sqlAddFriend = "INSERT INTO USERFRIENDS (\"userId\", \"friendId\", \"status\")" +
+        String sqlAddFriend = "INSERT INTO USERFRIENDS (userId, friendId, status)" +
                 "VALUES (?, ?, ?)";
         jdbcTemplate.update(sqlAddFriend, id, friendId, 2);
-        userStorage.updateUser(user);
         return user1;
     }
 
@@ -83,7 +82,7 @@ public class UserService implements UserServiceInt {
         User user1 = userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Объект не найден"));
         user1.getFriends().remove(id);
         String sqlDeleteFriend = "DELETE FROM USERFRIENDS \n" +
-                "WHERE \"userId\" = ? AND \"friendId\" = ?;";
+                "WHERE userId = ? AND friendId = ?;";
         jdbcTemplate.update(sqlDeleteFriend, id, friendId);
         userStorage.updateUser(user);
         return user1;

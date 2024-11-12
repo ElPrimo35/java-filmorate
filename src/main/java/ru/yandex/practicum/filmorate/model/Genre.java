@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 

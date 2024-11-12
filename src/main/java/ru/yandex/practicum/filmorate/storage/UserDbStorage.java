@@ -67,12 +67,7 @@ public class UserDbStorage implements UserStorage {
         }, keyHolder);
         Integer userId = (Integer) keyHolder.getKey();
 
-//        jdbcTemplate.update(sqlUser,
-//                user.getEmail(),
-//                user.getLogin(),
-//                user.getName(),
-//                user.getBirthday()
-//        );
+
         return jdbcTemplate.queryForObject("SELECT * FROM USERS u WHERE id = ?", mapUser(userId), userId);
     }
 

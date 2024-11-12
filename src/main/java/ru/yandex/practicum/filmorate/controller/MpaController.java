@@ -17,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MpaController {
     private final FilmService filmService;
+
     @GetMapping
     public List<Mpa> getAllMpa() {
         return filmService.getAllMpa();

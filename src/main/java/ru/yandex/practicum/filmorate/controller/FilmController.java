@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
@@ -24,10 +22,6 @@ public class FilmController {
     public ResponseEntity<Film> createFilm(@Valid @RequestBody Film film) {
         return ResponseEntity.ok(filmService.createFilm(film));
     }
-
-
-
-
 
     @GetMapping("/{id}")
     public Optional<Film> getFilmById(@Valid @PathVariable Integer id) {

@@ -141,7 +141,6 @@ public class FilmService implements FilmServiceInt {
 
     @Override
     public Film updateFilm(Film film) {
-//        filmStorage.getFilmById(film.getId()).orElseThrow(() -> new NotFoundException("Такого фильма нет"));
         filmStorage.updateFilm(film);
         return film;
     }

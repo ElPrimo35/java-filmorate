@@ -2,24 +2,21 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService implements UserServiceInt {
     private final UserStorage userStorage;
-    private final JdbcTemplate jdbcTemplate;
+    private final FriendStorage friendStorage;
 
     @Override
     public User createUser(User user) {
@@ -33,27 +30,22 @@ public class UserService implements UserServiceInt {
         return userStorage.getUsersList();
     }
 
-    public Optional<User> getUserById(Integer id) {
-        return userStorage.getUserById(id);
+    @Override
+    public List<User> getMutualFriends(Integer id, Integer otherId) {
+        return friendStorage.getMutualFriends(id, otherId);
+    }
+
+    @Override
+    public User getUserById(Integer id) {
+        return userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 
     @Override
     public List<User> getFriendsList(Integer id) {
-        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        return user.getFriends().stream().map(friendId -> userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Пользователь не найден"))).toList();
+        userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        return userStorage.getUserFriends(id);
     }
 
-    @Override
-    public List<User> getMutualFriends(Integer id, Integer otherId) {
-        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        User user1 = userStorage.getUserById(otherId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        final Set<Integer> friends = user.getFriends();
-        final Set<Integer> otherFriends = user1.getFriends();
-        return friends.stream()
-                .filter(otherFriends::contains)
-                .map(userId -> userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден")))
-                .collect(Collectors.toList());
-    }
 
     @Override
     public User updateUser(User user) {
@@ -64,28 +56,17 @@ public class UserService implements UserServiceInt {
     }
 
     @Override
-    public User addFriend(Integer id, Integer friendId) {
-        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Объект не найден"));
-        user.getFriends().add(friendId);
-        User user1 = userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Объект не найден"));
-        user1.getFriends().add(id);
-        String sqlAddFriend = "INSERT INTO USERFRIENDS (userId, friendId, status)" +
-                "VALUES (?, ?, ?)";
-        jdbcTemplate.update(sqlAddFriend, id, friendId, 2);
-        return user1;
+    public void addFriend(Integer id, Integer friendId) {
+        userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        friendStorage.addFriend(id, friendId);
     }
 
     @Override
-    public User removeFriend(Integer id, Integer friendId) {
-        User user = userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Объект не найден"));
-        user.getFriends().remove(friendId);
-        User user1 = userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Объект не найден"));
-        user1.getFriends().remove(id);
-        String sqlDeleteFriend = "DELETE FROM USERFRIENDS \n" +
-                "WHERE userId = ? AND friendId = ?;";
-        jdbcTemplate.update(sqlDeleteFriend, id, friendId);
-        userStorage.updateUser(user);
-        return user1;
+    public void removeFriend(Integer id, Integer friendId) {
+        userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        friendStorage.removeFriend(id, friendId);
     }
 
     private void validate(User user) {

@@ -13,10 +13,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Primary
 @AllArgsConstructor
@@ -24,20 +23,8 @@ import java.util.Set;
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    private Set<Integer> getUserFriends(Integer userId) {
-        Set<Integer> friends = new HashSet<>();
-        jdbcTemplate.query("SELECT friendId \n" +
-                "FROM USERFRIENDS u \n" +
-                "WHERE userId = ?", (rs, rowNum) -> {
-            do {
-                friends.add(rs.getInt("friendId"));
-            } while (rs.next());
-            return friends;
-        }, userId);
-        return friends;
-    }
 
-    private RowMapper<User> mapUser(Integer userId) {
+    private RowMapper<User> mapUser() {
         return (rs, rowNum) -> {
             User user = new User();
             user.setId(rs.getInt("id"));
@@ -45,7 +32,6 @@ public class UserDbStorage implements UserStorage {
             user.setLogin(rs.getString("login"));
             user.setName(rs.getString("name"));
             user.setBirthday(rs.getDate("birthday").toLocalDate());
-            user.setFriends(getUserFriends(userId));
             return user;
         };
     }
@@ -68,7 +54,7 @@ public class UserDbStorage implements UserStorage {
         Integer userId = (Integer) keyHolder.getKey();
 
 
-        return jdbcTemplate.queryForObject("SELECT * FROM USERS u WHERE id = ?", mapUser(userId), userId);
+        return jdbcTemplate.queryForObject("SELECT * FROM USERS u WHERE id = ?", mapUser(), userId);
     }
 
     @Override
@@ -80,15 +66,30 @@ public class UserDbStorage implements UserStorage {
             user.setLogin(rs.getString("login"));
             user.setName(rs.getString("name"));
             user.setBirthday(rs.getDate("birthday").toLocalDate());
-            user.setFriends(getUserFriends(user.getId()));
             return user;
         });
     }
 
+
+    @Override
+    public List<User> getUserFriends(Integer userId) {
+        List<User> friends = new ArrayList<>();
+        jdbcTemplate.query("SELECT friendId \n" +
+                "FROM FRIENDS u \n" +
+                "WHERE userId = ?", (rs, rowNum) -> {
+            do {
+                friends.add(getUserById(rs.getInt("friendId")).orElseThrow(RuntimeException::new));
+            } while (rs.next());
+            return friends;
+        }, userId);
+        return friends;
+    }
+
+
     @Override
     public Optional<User> getUserById(int id) {
         try {
-            User user = jdbcTemplate.queryForObject("SELECT * FROM USERS u WHERE id = ?", mapUser(id), id);
+            User user = jdbcTemplate.queryForObject("SELECT * FROM USERS u WHERE id = ?", mapUser(), id);
             return Optional.ofNullable(user);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
@@ -108,6 +109,6 @@ public class UserDbStorage implements UserStorage {
                 user.getBirthday(),
                 user.getId()
         );
-        return jdbcTemplate.queryForObject("SELECT * FROM USERS u WHERE id = ?", mapUser(user.getId()), user.getId());
+        return jdbcTemplate.queryForObject("SELECT * FROM USERS u WHERE id = ?", mapUser(), user.getId());
     }
 }

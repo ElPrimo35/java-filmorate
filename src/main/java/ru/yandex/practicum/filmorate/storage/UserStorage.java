@@ -12,5 +12,7 @@ public interface UserStorage {
 
     Optional<User> getUserById(int id);
 
+    List<User> getUserFriends(Integer userId);
+
     User updateUser(User user);
 }

@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -24,37 +23,37 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getUsersList() {
-        return userService.getUsersList();
+    public ResponseEntity<List<User>> getUsersList() {
+        return ResponseEntity.ok(userService.getUsersList());
     }
 
     @GetMapping("/{id}")
-    public Optional<User> getUserById(@PathVariable Integer id) {
-        return userService.getUserById(id);
+    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriendsList(@PathVariable Integer id) {
-        return userService.getFriendsList(id);
+    public ResponseEntity<List<User>> getFriendsList(@PathVariable Integer id) {
+        return ResponseEntity.ok(userService.getFriendsList(id));
     }
 
     @GetMapping("{id}/friends/common/{otherId}")
-    public List<User> getMutualFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
-        return userService.getMutualFriends(id, otherId);
+    public ResponseEntity<List<User>> getMutualFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+        return ResponseEntity.ok(userService.getMutualFriends(id, otherId));
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User user) {
-        return userService.updateUser(user);
+    public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
+        return ResponseEntity.ok(userService.updateUser(user));
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<User> addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
-        return ResponseEntity.ok(userService.addFriend(id, friendId));
+    public void addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<User> removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
-        return ResponseEntity.ok(userService.removeFriend(id, friendId));
+    public void removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        userService.removeFriend(id, friendId);
     }
 }

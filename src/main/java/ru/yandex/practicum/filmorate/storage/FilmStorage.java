@@ -8,6 +8,12 @@ import java.util.Optional;
 public interface FilmStorage {
     Film createFilm(Film film);
 
+    List<Film> getPopularFilms(Integer count);
+
+    void likeFilm(int id, int userId);
+
+    void removeLike(int id, int userId);
+
     List<Film> getFilmsList();
 
     Optional<Film> getFilmById(int id);

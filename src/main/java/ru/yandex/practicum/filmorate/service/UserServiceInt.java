@@ -9,13 +9,15 @@ public interface UserServiceInt {
 
     List<User> getUsersList();
 
+    User getUserById(Integer id);
+
     User updateUser(User user);
 
-    List<User> getFriendsList(int id);
+    List<User> getFriendsList(Integer id);
 
-    List<User> getMutualFriends(int id, int otherId);
+    List<User> getMutualFriends(Integer id, Integer otherId);
 
-    User addFriend(int id, int friendId);
+    void addFriend(Integer id, Integer friendId);
 
-    User removeFriend(int id, int friendId);
+    void removeFriend(Integer id, Integer friendId);
 }

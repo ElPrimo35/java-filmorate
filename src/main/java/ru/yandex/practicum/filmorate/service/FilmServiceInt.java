@@ -5,7 +5,10 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.List;
 
 public interface FilmServiceInt {
+
     Film createFilm(Film film);
+
+    Film getFilmById(Integer id);
 
     List<Film> getFilmsList();
 

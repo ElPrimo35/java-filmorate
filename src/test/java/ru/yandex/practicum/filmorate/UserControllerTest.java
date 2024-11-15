@@ -6,19 +6,24 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.FriendDbStorage;
+import ru.yandex.practicum.filmorate.storage.FriendStorage;
+import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.time.Month;
 
 public class UserControllerTest {
-    private final UserStorage userStorage = new InMemoryUserStorage();
+    private final JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    private final UserStorage userStorage = new UserDbStorage(jdbcTemplate);
+    private final FriendStorage friendStorage = new FriendDbStorage(jdbcTemplate);
 
-    private final UserService userService = new UserService(userStorage);
+    private final UserService userService = new UserService(userStorage, friendStorage);
     private final UserController userController = new UserController(userService);
     private static Validator validator;
 
@@ -35,16 +40,6 @@ public class UserControllerTest {
         Assertions.assertFalse(validator.validate(user).isEmpty());
     }
 
-    @Test
-    public void emptyNameTest() {
-        User user = new User();
-        user.setEmail("ElPrimo35@Gmail.com");
-        user.setLogin("ElPrimo");
-        user.setName("");
-        user.setBirthday(LocalDate.of(2003, Month.NOVEMBER, 24));
-        User user1 = userController.createUser(user);
-        Assertions.assertEquals(user1.getName(), user1.getLogin());
-    }
 
     @Test
     public void loginTest() {

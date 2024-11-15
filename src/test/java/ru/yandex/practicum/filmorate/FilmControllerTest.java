@@ -6,22 +6,22 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.time.Month;
 
 public class FilmControllerTest {
-    private final FilmStorage filmStorage = new InMemoryFilmStorage();
-    private final UserStorage userStorage = new InMemoryUserStorage();
-    private final FilmService filmService = new FilmService(filmStorage, userStorage);
+
+    private final JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    private final FilmStorage filmStorage = new FilmDbStorage(jdbcTemplate);
+    private final FilmService filmService = new FilmService(filmStorage);
 
     private final FilmController filmController = new FilmController(filmService);
     private static Validator validator;

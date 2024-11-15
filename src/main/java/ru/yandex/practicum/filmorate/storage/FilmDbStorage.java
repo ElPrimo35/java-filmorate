@@ -37,7 +37,7 @@ public class FilmDbStorage implements FilmStorage {
                     genreId
             );
         } catch (DataAccessException e) {
-            throw new RuntimeException();
+            e.getCause();
         }
     }
 

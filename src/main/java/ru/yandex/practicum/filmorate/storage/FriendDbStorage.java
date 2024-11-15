@@ -29,24 +29,13 @@ public class FriendDbStorage implements FriendStorage {
 
     @Override
     public List<User> getMutualFriends(Integer id, Integer otherId) {
-        String sql = "SELECT *\n" +
-                "FROM USERS u \n" +
-                "WHERE u.ID IN (SELECT FRIENDID\n" +
-                "FROM FRIENDS\n" +
-                "WHERE USERID = ?\n" +
-                "AND FRIENDID IN (\n" +
-                "    SELECT FRIENDID\n" +
-                "    FROM FRIENDS\n" +
-                "    WHERE USERID = ?\n" +
-                "));";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            User user = new User();
-            user.setId(rs.getInt("id"));
-            user.setEmail(rs.getString("email"));
-            user.setLogin(rs.getString("login"));
-            user.setName(rs.getString("name"));
-            user.setBirthday(rs.getDate("birthday").toLocalDate());
-            return user;
-        }, id, otherId);
+        String sql = "select u.ID,\n" +
+                "\t   u.EMAIL,\n" +
+                "\t   u.LOGIN,\n" +
+                "\t   u.NAME,\n" +
+                "\t   u.BIRTHDAY \n" +
+                "from USERS u, FRIENDS f, FRIENDS o  \n" +
+                "where u.ID = f.FRIENDID AND u.ID = o.FRIENDID AND f.USERID = ? AND o.USERID = ?";
+        return jdbcTemplate.query(sql, UserDbStorage::makeUser, id, otherId);
     }
 }

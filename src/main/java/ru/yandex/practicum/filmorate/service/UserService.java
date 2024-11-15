@@ -57,15 +57,15 @@ public class UserService implements UserServiceInt {
 
     @Override
     public void addFriend(Integer id, Integer friendId) {
-        userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        userStorage.getUserById(id);
+        userStorage.getUserById(friendId);
         friendStorage.addFriend(id, friendId);
     }
 
     @Override
     public void removeFriend(Integer id, Integer friendId) {
-        userStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        userStorage.getUserById(friendId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        userStorage.getUserById(id);
+        userStorage.getUserById(friendId);
         friendStorage.removeFriend(id, friendId);
     }
 

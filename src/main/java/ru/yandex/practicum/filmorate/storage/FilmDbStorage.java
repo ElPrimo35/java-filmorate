@@ -11,9 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,12 +26,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM FILMS f \n" +
                 "JOIN FILMGENRES f2 ON f.ID = f2.FILMID \n" +
                 "JOIN GENRES f3 ON f2.GENREID = f3.ID \n" +
-                "WHERE f2.FILMID = ?", (rs, rowNum) -> {
-            Genre genre = new Genre();
-            genre.setId(rs.getInt("id"));
-            genre.setName(rs.getString("name"));
-            return genre;
-        }, filmId);
+                "WHERE f2.FILMID = ?", GenreDbStorage::makeGenre, filmId);
     }
 
     private void insertGenreFilm(Integer filmId, Integer genreId) {
@@ -43,23 +36,18 @@ public class FilmDbStorage implements FilmStorage {
                     filmId,
                     genreId
             );
-        } catch (DataAccessException ignored) {
+        } catch (DataAccessException e) {
+            throw new RuntimeException();
         }
     }
 
 
     private Mpa getMpa(Integer filmId) {
-        Mpa mpa = new Mpa();
-        jdbcTemplate.queryForObject("SELECT m.ID,\n" +
+        return jdbcTemplate.queryForObject("SELECT m.ID,\n" +
                 "       m.name \n" +
                 "FROM FILMS f \n" +
                 "JOIN MPA m ON f.MPA = m.ID \n" +
-                "WHERE m.ID = f.MPA AND f.ID = ?", (rs, rowNum) -> {
-            mpa.setId(rs.getInt("id"));
-            mpa.setName(rs.getString("name"));
-            return mpa;
-        }, filmId);
-        return mpa;
+                "WHERE m.ID = f.MPA AND f.ID = ?", MpaDbStorage::makeMpa, filmId);
     }
 
     private RowMapper<Film> mapFilm(Integer filmId) {
@@ -74,6 +62,18 @@ public class FilmDbStorage implements FilmStorage {
             film1.setMpa(getMpa(filmId));
             return film1;
         };
+    }
+
+    private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
+        Film film = new Film();
+        film.setId(rs.getInt("id"));
+        film.setName(rs.getString("name"));
+        film.setDescription(rs.getString("description"));
+        film.setReleaseDate(rs.getDate("releaseDate").toLocalDate());
+        film.setDuration(rs.getInt("duration"));
+        film.setGenres(getGenres(film.getId()));
+        film.setMpa(getMpa(film.getId()));
+        return film;
     }
 
 
@@ -101,12 +101,12 @@ public class FilmDbStorage implements FilmStorage {
             film.getGenres().forEach(genre -> insertGenreFilm(filmId, genre.getId()));
         }
 
-
         return jdbcTemplate.queryForObject("SELECT * FROM FILMS f WHERE id = ?", mapFilm(filmId), filmId);
     }
 
     @Override
     public List<Film> getPopularFilms(Integer count) {
+
         String sql = "SELECT * \n" +
                 "FROM FILMS f \n" +
                 "WHERE f.ID IN (SELECT FILMID    \n" +
@@ -115,32 +115,12 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY FILMID\n" +
                 "ORDER BY COUNT(FILMID) DESC)\n" +
                 "LIMIT ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Film film = new Film();
-            film.setId(rs.getInt("id"));
-            film.setName(rs.getString("name"));
-            film.setDescription(rs.getString("description"));
-            film.setReleaseDate(rs.getDate("releaseDate").toLocalDate());
-            film.setDuration(rs.getInt("duration"));
-            film.setGenres(getGenres(film.getId()));
-            film.setMpa(getMpa(film.getId()));
-            return film;
-        }, count);
+        return jdbcTemplate.query(sql, this::makeFilm, count);
     }
 
     @Override
     public List<Film> getFilmsList() {
-        return jdbcTemplate.query("SELECT * FROM FILMS f;", (rs, rowNum) -> {
-            Film film = new Film();
-            film.setId(rs.getInt("id"));
-            film.setName(rs.getString("name"));
-            film.setDescription(rs.getString("description"));
-            film.setReleaseDate(rs.getDate("releaseDate").toLocalDate());
-            film.setDuration(rs.getInt("duration"));
-            film.setGenres(getGenres(film.getId()));
-            film.setMpa(getMpa(film.getId()));
-            return film;
-        });
+        return jdbcTemplate.query("SELECT * FROM FILMS f", this::makeFilm);
     }
 
     @Override

@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 @Component
@@ -13,15 +15,17 @@ import java.util.List;
 public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
+    static Mpa makeMpa(ResultSet rs, int rowNum) throws SQLException {
+        Mpa mpa = new Mpa();
+        mpa.setId(rs.getInt("id"));
+        mpa.setName(rs.getString("name"));
+        return mpa;
+    }
+
     @Override
     public List<Mpa> getAllMpa() {
         String sql = "SELECT * FROM MPA;";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Mpa mpa = new Mpa();
-            mpa.setId(rs.getInt("id"));
-            mpa.setName(rs.getString("name"));
-            return mpa;
-        });
+        return jdbcTemplate.query(sql, MpaDbStorage::makeMpa);
     }
 
     @Override
@@ -30,12 +34,7 @@ public class MpaDbStorage implements MpaStorage {
             throw new NotFoundException("MPA не найден");
         }
         String sql = "SELECT * FROM MPA WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
-            Mpa mpa = new Mpa();
-            mpa.setId(rs.getInt("id"));
-            mpa.setName(rs.getString("name"));
-            return mpa;
-        }, id);
+        return jdbcTemplate.queryForObject(sql, MpaDbStorage::makeMpa, id);
     }
 
 }
